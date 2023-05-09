@@ -28,6 +28,7 @@ namespace FunctionJujutsu
                 var section = ExtractInfoHtml.ExtractSpecifyPartHtml(jujutsuHtml, @"//div[@class='wds-tab__content wds-is-current']");
                 var filterNodes = section[0].ChildNodes.Where(x => x.Name == "table" || x.Name == "div").ToList();
 
+                filterNodes.Select( x=> x)
                 List<Herachy> jujutsu = new List<Herachy>();
 
                 int numTable = 0;
