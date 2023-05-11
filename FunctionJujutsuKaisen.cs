@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using FunctionJujutsu.Utils;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace FunctionJujutsu
 {
@@ -25,43 +26,46 @@ namespace FunctionJujutsu
             try
             {
                 var jujutsuHtml = await ExternalCallWeb.CallUrl("https://jujutsu-kaisen.fandom.com/es/wiki/Lista_de_Personajes#Manga");
-                var section = ExtractInfoHtml.ExtractSpecifyPartHtml(jujutsuHtml, @"//div[@class='wds-tab__content wds-is-current']");
+                var section = ExtractInfoHtml.ExtractSpecifyPartHtml(jujutsuHtml, @"//*[@id='mw-content-text']/div/div/div/div[3]");
                 var filterNodes = section[0].ChildNodes.Where(x => x.Name == "table" || x.Name == "div").ToList();
 
-                filterNodes.Select( x=> x)
+                
                 List<Herachy> jujutsu = new List<Herachy>();
 
                 int numTable = 0;
                 string nameMain = string.Empty;
                 string secondary = string.Empty;
-                foreach (var item in filterNodes)
-                {
-                    if(item.Name == "table" && numTable == 0)
-                    {
-                        Console.WriteLine(item.InnerText);
-                        numTable += 1;
-                        nameMain = item.InnerText;
 
-                        continue;
-                    }
-                    if (item.Name == "table" && numTable == 1)
+                for (int i = 0; i < filterNodes.Count; i++)
+                {
+                    if (filterNodes[i].Name == "table" && filterNodes[i+1].Name == "table")
                     {
-                        Console.WriteLine(item.InnerText);
-                        numTable =0;
-                        secondary = item.InnerText;
-                        continue;
+                        string main = filterNodes[i].InnerText;
+                        Console.WriteLine($"main--> {main.Trim()}");
                     }
-                    if (item.Name == "div")
+                    if (filterNodes[i].Name == "table" && filterNodes[i + 1].Name == "div")
                     {
-                        var uno = item.SelectNodes("/div[@class='wikia-gallery-item']");
-                        
-                            Console.WriteLine("");
-                        
+                        string main = filterNodes[i].InnerText;
+                        Console.WriteLine($"secondary--> {main.Trim()}");
                     }
+                    if (filterNodes[i].Name == "div")
+                    {
+                        var uno = filterNodes[i].ChildNodes[1].ChildNodes;
+                        Console.WriteLine("********************************************************");
+                        foreach (var item in uno)
+                        {
+                            Console.WriteLine($"****{item.InnerText}");
+                            var  textoLimpio = item.InnerText.Replace("?", "");
+
+                            var url = $"https://jujutsu-kaisen.fandom.com/es/wiki/{textoLimpio.Replace(" ", "_")}";
+                            Console.WriteLine($"****{url}");
+                        }
+                        Console.WriteLine("********************************************************");
+                        //Console.WriteLine($" users--> {filterNodes[i].InnerText}");
+                    }
+
 
                 }
-
-                
 
                 string name = req.Query["name"];
 
